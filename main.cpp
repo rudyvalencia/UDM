@@ -73,14 +73,15 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prevInstance, PWSTR cmdLine, i
 			MessageBox(nullptr, _T("Unable to add Shell_NotifyIcon!"), APP_NAME, MB_ICONERROR | MB_OK);
 			exit(EXIT_FAILURE);
 		}
-
+		
+/*
 		data = ni->GetData();
 		wcscpy_s(data.szInfoTitle, APP_NAME);
 		wcscpy_s(data.szInfo, _T("Running"));
 
 		ni->SetData(data);
 		ni->Modify();
-
+*/
 		while(GetMessage(&msg, NULL, 0, 0) > 0)
 		{
 			WNDPROC fWndProc = reinterpret_cast<WNDPROC>(GetWindowLong(msg.hwnd, GWL_WNDPROC));

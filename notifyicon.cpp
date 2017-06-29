@@ -47,19 +47,14 @@ NOTIFYICONDATA NotifyIcon::GetData()
 
 LRESULT CALLBACK NotifyIcon::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	int wmId, wmEvent;
+
 	switch (msg)
 	{
 		case MSG_NOTIFYICON: {
 			switch (lParam)
 			{
 			case WM_LBUTTONDBLCLK:
-				wcscpy_s(data.szInfoTitle, _T("Info"));
-				wcscpy_s(data.szInfo, _T("Double-clicked, exiting now"));
-				data.hBalloonIcon = LoadIcon(nullptr, IDI_INFORMATION);
-
-				Modify();
-
-				SetTimer(hWnd, MSG_TIMER, 1000, nullptr);
 
 				break;
 			case WM_RBUTTONUP:
@@ -70,24 +65,22 @@ LRESULT CALLBACK NotifyIcon::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM 
 		}
 		break;
 
-		case (MSG_EXIT):
-			Delete();
-			PostQuitMessage(0);
-		break;
+		case WM_COMMAND:
+			wmId = LOWORD(wParam);
+			wmEvent = HIWORD(wParam);
 
-		case WM_TIMER:
-			switch (wParam)
+			switch (wmId)
 			{
-				case MSG_TIMER:
-					Delete();
-					PostQuitMessage(0);
-
-					return 0;
+			case ID_UDM_EXIT:
+				Delete();
+				PostQuitMessage(0);
+				break;
 			}
-		break;
+			return 1;
+
 		default:
-			DefWindowProc(hWnd, msg, wParam, lParam);
-		break;
+			return DefWindowProc(hWnd, msg, wParam, lParam);
+			break;
 	}
 
 	// 
