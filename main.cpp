@@ -38,7 +38,31 @@ LRESULT CALLBACK msgWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prevInstance, PWSTR cmdLine, int nCmdShow)
+ULONGLONG GetDllVersion(LPCTSTR lpszDllName)
+{
+	ULONGLONG ullVersion = 0;
+	HINSTANCE hinstDll;
+	hinstDll = LoadLibrary(lpszDllName);
+	if (hinstDll)
+	{
+		DLLGETVERSIONPROC pDllGetVersion;
+		pDllGetVersion = (DLLGETVERSIONPROC)GetProcAddress(hinstDll, "DllGetVersion");
+		if (pDllGetVersion)
+		{
+			DLLVERSIONINFO dvi;
+			HRESULT hr;
+			ZeroMemory(&dvi, sizeof(dvi));
+			dvi.cbSize = sizeof(dvi);
+			hr = (*pDllGetVersion)(&dvi);
+			if (SUCCEEDED(hr))
+				ullVersion = MAKEDLLVERULL(dvi.dwMajorVersion, dvi.dwMinorVersion, 0, 0);
+		}
+		FreeLibrary(hinstDll);
+	}
+	return ullVersion;
+}
+
+int APIENTRY _tWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPTSTR cmdLine, int nCmdShow)
 {
 	if (g_SingleInstanceObj.IsAnotherInstanceRunning())
 		return FALSE;
@@ -56,16 +80,18 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prevInstance, PWSTR cmdLine, i
 
 	if (RegisterClassEx(&msgWndClass)) {
 		msgWnd = CreateWindowEx(0, MSGWND_CLASS, _T("Message Window"), 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, nullptr, nullptr);
-		
+
+
 		data.cbSize = sizeof(NOTIFYICONDATA);
 		data.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_INFO;
 		data.hWnd = msgWnd;
-		data.hIcon = LoadIcon(instance, MAKEINTRESOURCE(IDI_MAIN));
 		data.uID = ID_NOTIFYICON;
 		data.uVersion = NOTIFYICON_VERSION_4;
 		data.uCallbackMessage = MSG_NOTIFYICON;
+		data.hIcon = (HICON)LoadImage(instance, MAKEINTRESOURCE(IDI_MAIN), IMAGE_ICON,
+			GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
+			LR_DEFAULTCOLOR);
 		wcscpy_s(data.szTip, _T("UDM R1"));
-		LoadIconMetric(instance, MAKEINTRESOURCE(IDI_MAIN), LIM_SMALL, &data.hIcon);
 
 		ni->SetData(data);
 
@@ -73,15 +99,52 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prevInstance, PWSTR cmdLine, i
 			MessageBox(nullptr, _T("Unable to add Shell_NotifyIcon!"), APP_NAME, MB_ICONERROR | MB_OK);
 			exit(EXIT_FAILURE);
 		}
-		
-/*
-		data = ni->GetData();
-		wcscpy_s(data.szInfoTitle, APP_NAME);
-		wcscpy_s(data.szInfo, _T("Running"));
 
-		ni->SetData(data);
-		ni->Modify();
-*/
+		// 
+		// "Nervous? First-time?" - Old lady, "Airplane!"
+		// 
+		HKEY udmKey = nullptr;
+		if (RegOpenKeyEx(HKEY_CURRENT_USER, APP_REG_KEY, 0, KEY_ALL_ACCESS, &udmKey) != ERROR_SUCCESS)
+		{
+			// 
+			// Config key not found, create it and initialize default values
+			// 
+			RegCreateKey(HKEY_CURRENT_USER, APP_REG_KEY, &udmKey);
+			RegSetValueEx(udmKey, _T("Standby"), 0, REG_DWORD, (const BYTE *)&DEFAULT_STANDBY, sizeof(DEFAULT_STANDBY));
+
+			// 
+			// Add autorun if it is allowed by the default configuration.
+			// 
+			HKEY userStartup = nullptr;
+			RegOpenKeyEx(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\CurrentVersion\\Run"), 0, KEY_ALL_ACCESS, &userStartup);
+			
+			if ((DEFAULT_START_ON_BOOT == 1) &&
+				(RegGetValue(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\CurrentVersion\\Run"),
+				 APP_NAME, RRF_RT_REG_SZ, nullptr, nullptr, nullptr) != ERROR_SUCCESS))
+			{
+				TCHAR szFileName[MAX_PATH + 1];
+				GetModuleFileName(nullptr, szFileName, MAX_PATH + 1);
+				RegSetValueEx(userStartup, APP_NAME, 0, REG_SZ, (const BYTE *)&szFileName, MAX_PATH + 1);
+				
+				RegCloseKey(userStartup);
+				RegSetValueEx(udmKey, _T("StartOnBoot"), 0, REG_DWORD, (const BYTE *)&DEFAULT_START_ON_BOOT, sizeof(DEFAULT_START_ON_BOOT));
+			}
+
+			// 
+			// A little welcome popup
+			// 
+			data = ni->GetData();
+			wcscpy_s(data.szInfoTitle, APP_NAME);
+			wcscpy_s(data.szInfo, _T("Double-click to begin countdown; right-click for more options."));
+
+			ni->SetData(data);
+			ni->Modify();
+		}
+		RegCloseKey(udmKey);
+
+		// 
+		// Message loop
+		// 
 		while(GetMessage(&msg, NULL, 0, 0) > 0)
 		{
 			WNDPROC fWndProc = reinterpret_cast<WNDPROC>(GetWindowLong(msg.hwnd, GWL_WNDPROC));

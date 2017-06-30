@@ -35,13 +35,12 @@
 // 
 
 extern const TCHAR *APP_NAME,
-					 *APP_MUTEXNAME,
-					 *MSGWND_CLASS;
+				   *APP_REG_KEY,
+				   *APP_MUTEXNAME,
+				   *MSGWND_CLASS;
+
+static const DWORD DEFAULT_STANDBY = 30,
+				   DEFAULT_START_ON_BOOT = 1;
 
 static const int ID_NOTIFYICON = 1,
 				 MSG_NOTIFYICON = WM_USER;
-
-// 
-// Our app's GUID is {F02204B2-BAA2-4282-8EAA24BCDE200AB2}
-//
-static GUID APP_GUID;
