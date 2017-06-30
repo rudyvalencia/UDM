@@ -37,7 +37,10 @@
 extern const TCHAR *APP_NAME,
 				   *APP_REG_KEY,
 				   *APP_MUTEXNAME,
-				   *MSGWND_CLASS;
+				   *MSGWND_CLASS,
+				   *SYS_RUN_KEY,
+				   *SETTING_STANDBYTIME,
+				   *SETTING_STARTONBOOT;
 
 static const DWORD DEFAULT_STANDBY = 30,
 				   DEFAULT_START_ON_BOOT = 1;

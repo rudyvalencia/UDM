@@ -110,16 +110,16 @@ int APIENTRY _tWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPTSTR cmdLin
 			// Config key not found, create it and initialize default values
 			// 
 			RegCreateKey(HKEY_CURRENT_USER, APP_REG_KEY, &udmKey);
-			RegSetValueEx(udmKey, _T("Standby"), 0, REG_DWORD, (const BYTE *)&DEFAULT_STANDBY, sizeof(DEFAULT_STANDBY));
+			RegSetValueEx(udmKey, SETTING_STANDBYTIME, 0, REG_DWORD, (const BYTE *)&DEFAULT_STANDBY, sizeof(DEFAULT_STANDBY));
 
 			// 
 			// Add autorun if it is allowed by the default configuration.
 			// 
 			HKEY userStartup = nullptr;
-			RegOpenKeyEx(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\CurrentVersion\\Run"), 0, KEY_ALL_ACCESS, &userStartup);
+			RegOpenKeyEx(HKEY_CURRENT_USER, SYS_RUN_KEY, 0, KEY_ALL_ACCESS, &userStartup);
 			
 			if ((DEFAULT_START_ON_BOOT == 1) &&
-				(RegGetValue(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\CurrentVersion\\Run"),
+				(RegGetValue(HKEY_CURRENT_USER, SYS_RUN_KEY,
 				 APP_NAME, RRF_RT_REG_SZ, nullptr, nullptr, nullptr) != ERROR_SUCCESS))
 			{
 				TCHAR szFileName[MAX_PATH + 1];
@@ -127,7 +127,7 @@ int APIENTRY _tWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPTSTR cmdLin
 				RegSetValueEx(userStartup, APP_NAME, 0, REG_SZ, (const BYTE *)&szFileName, MAX_PATH + 1);
 				
 				RegCloseKey(userStartup);
-				RegSetValueEx(udmKey, _T("StartOnBoot"), 0, REG_DWORD, (const BYTE *)&DEFAULT_START_ON_BOOT, sizeof(DEFAULT_START_ON_BOOT));
+				RegSetValueEx(udmKey, SETTING_STARTONBOOT, 0, REG_DWORD, (const BYTE *)&DEFAULT_START_ON_BOOT, sizeof(DEFAULT_START_ON_BOOT));
 			}
 
 			// 
