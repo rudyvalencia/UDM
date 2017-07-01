@@ -1,41 +1,42 @@
 #include "stdafx.h"
-CLimitSingleInstance g_SingleInstanceObj(_T("Global\\{F02204B2-BAA2-4282-8EAA24BCDE200AB2}"));
+CLimitSingleInstance g_SingleInstanceObj(APP_MUTEXNAME);
 
 WNDCLASSEX msgWndClass = { 0 };
 HWND msgWnd = nullptr;
 NotifyIcon *ni = nullptr;
+RuntimeSupport support;
 
 LRESULT CALLBACK msgWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	IDispatcher* lpHandlerInstance = (IDispatcher*)
-		GetWindowLong(hWnd, GWL_USERDATA);
+	IDispatcher* dispatcher = reinterpret_cast<IDispatcher*>
+		(GetWindowLong(hWnd, GWL_USERDATA));
 
-	if (lpHandlerInstance == nullptr)
+	LRESULT result = 0;
+	
+	if (dispatcher == nullptr)
 	{
 		switch (msg)
 		{
 		case WM_CLOSE:
 			DestroyWindow(hWnd);
 			break;
+		
 		case WM_DESTROY:
 			ni->Delete();
 			PostQuitMessage(0);
 			break;
+		
 		default:
-			return DefWindowProc(hWnd, msg, wParam, lParam);
+			result = DefWindowProc(hWnd, msg, wParam, lParam);
+			break;
 		}
 	}
 	else
 	{
-		// Black magic sanctioned by the ISO C++ standard.
-		// 
-		IDispatcher* dispatcher = dynamic_cast<IDispatcher*>
-			((IDispatcher*) lpHandlerInstance);
-		
-		return dispatcher->WndProc(hWnd, msg, wParam, lParam);
+		result = dispatcher->WndProc(hWnd, msg, wParam, lParam);
 	}
 	
-	return 0;
+	return result;
 }
 
 ULONGLONG GetDllVersion(LPCTSTR lpszDllName)
@@ -66,12 +67,14 @@ int APIENTRY _tWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPTSTR cmdLin
 {
 	if (g_SingleInstanceObj.IsAnotherInstanceRunning())
 		return FALSE;
-
-	ni = new NotifyIcon(instance);
+	
+	support.startUp(instance);
+	ni = new NotifyIcon(support);
+	
 	NOTIFYICONDATA data = { 0 };
 
 	MSG msg = { 0 };
-	BOOL bRet = FALSE;
+	//BOOL bRet = FALSE;
 
 	msgWndClass.cbSize = sizeof(WNDCLASSEX);
 	msgWndClass.lpfnWndProc = msgWndProc;
@@ -80,7 +83,6 @@ int APIENTRY _tWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPTSTR cmdLin
 
 	if (RegisterClassEx(&msgWndClass)) {
 		msgWnd = CreateWindowEx(0, MSGWND_CLASS, _T("Message Window"), 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, nullptr, nullptr);
-
 
 		data.cbSize = sizeof(NOTIFYICONDATA);
 		data.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_INFO;

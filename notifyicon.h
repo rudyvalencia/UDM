@@ -4,12 +4,12 @@
 class NotifyIcon: public IDispatcher
 {
 	NOTIFYICONDATA data = { 0 };
-	HINSTANCE instance = nullptr;
+	RuntimeSupport& support;
 
 public:
 		LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-		NotifyIcon(HINSTANCE hInstance);
+		NotifyIcon(RuntimeSupport& instance);
 		~NotifyIcon();
 
 		BOOL Add(HWND hWnd);

@@ -1,8 +1,8 @@
 #include "stdafx.h"
 
-NotifyIcon::NotifyIcon(HINSTANCE hInstance)
+NotifyIcon::NotifyIcon(RuntimeSupport& instance)
+	: support(instance)
 {
-	instance = hInstance;
 }
 
 NotifyIcon::~NotifyIcon()
@@ -71,6 +71,11 @@ LRESULT CALLBACK NotifyIcon::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM 
 
 			switch (wmId)
 			{
+			case ID_UDM_DISPLAYSETTINGS:
+				support.OpenDisplaySettings();
+				break;
+			case ID_UDM_PERSONALIZE:
+				break;
 			case ID_UDM_EXIT:
 				Delete();
 				PostQuitMessage(0);
@@ -94,7 +99,7 @@ void NotifyIcon::ShowContextMenu(HWND hWnd)
 	POINT p;
 	GetCursorPos(&p);
 
-	HMENU udmMenu = GetSubMenu(LoadMenu(instance, MAKEINTRESOURCE(IDR_UDMMENU)), 0);
+	HMENU udmMenu = GetSubMenu(LoadMenu(support.instance(), MAKEINTRESOURCE(IDR_UDMMENU)), 0);
 
 	SetForegroundWindow(hWnd);
 	TrackPopupMenu(udmMenu, TPM_RIGHTBUTTON, p.x, p.y, 0, hWnd, nullptr);

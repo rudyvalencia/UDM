@@ -8,7 +8,7 @@ protected:
 	HANDLE m_hMutex;
 
 public:
-	CLimitSingleInstance(TCHAR *strMutexName)
+	CLimitSingleInstance(const TCHAR *strMutexName)
 	{
 		m_hMutex = CreateMutex(nullptr, FALSE, strMutexName);
 		m_dwLastError = GetLastError();
