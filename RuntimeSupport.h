@@ -18,7 +18,9 @@ public:
 
 	void startUp(HINSTANCE instance);
 	void release();
+
 	void OpenDisplaySettings();
+	void OpenPersonalization();
 
 	RuntimeSupport();
 	RuntimeSupport(RuntimeSupport& reference);

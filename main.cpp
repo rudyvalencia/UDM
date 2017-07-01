@@ -9,7 +9,7 @@ RuntimeSupport support;
 LRESULT CALLBACK msgWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	IDispatcher* dispatcher = reinterpret_cast<IDispatcher*>
-		(GetWindowLong(hWnd, GWL_USERDATA));
+		(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
 	LRESULT result = 0;
 	
@@ -149,7 +149,7 @@ int APIENTRY _tWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPTSTR cmdLin
 		// 
 		while(GetMessage(&msg, NULL, 0, 0) > 0)
 		{
-			WNDPROC fWndProc = reinterpret_cast<WNDPROC>(GetWindowLong(msg.hwnd, GWL_WNDPROC));
+			WNDPROC fWndProc = reinterpret_cast<WNDPROC>(GetWindowLongPtr(msg.hwnd, GWLP_WNDPROC));
 			fWndProc(msg.hwnd, msg.message, msg.wParam, msg.lParam);
 		}
 

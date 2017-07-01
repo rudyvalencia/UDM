@@ -74,9 +74,6 @@ void RuntimeSupport::release()
 	}
 }
 
-// ShellExecute(0, 0, _T("ms-settings:display"), nullptr, nullptr, SW_SHOW);
-// ShellExecute(hWnd, _T("Open"), ControlApp, _T("/name Microsoft.Personalization"), nullptr, SW_SHOW);
-
 void RuntimeSupport::OpenDisplaySettings()
 {
 	switch (version.dwMajorVersion) {
@@ -84,11 +81,26 @@ void RuntimeSupport::OpenDisplaySettings()
 			ShellExecute(0, 0, _T("ms-settings:display"), nullptr, nullptr, SW_SHOW);
 			break;
 		case 6:
-			ShellExecute(0, 0, ControlPath, _T("/name Microsoft.Display"), nullptr, SW_SHOW);
+			ShellExecute(0, 0, ControlPath, _T("/name Microsoft.Display /page Settings"), nullptr, SW_SHOW);
 			break;
 		default:
 			ShellExecute(0, 0, ControlPath, _T("desk.cpl"), nullptr, SW_SHOW);
 			break;
+	}
+}
+
+void RuntimeSupport::OpenPersonalization()
+{
+	switch (version.dwMajorVersion) {
+	case 10:
+		ShellExecute(0, 0, _T("ms-settings:personalization-background"), nullptr, nullptr, SW_SHOW);
+		break;
+	case 6:
+		ShellExecute(0, 0, ControlPath, _T("/name Microsoft.Personalization"), nullptr, SW_SHOW);
+		break;
+	default:
+		ShellExecute(0, 0, ControlPath, _T("desk.cpl"), nullptr, SW_SHOW);
+		break;
 	}
 }
 

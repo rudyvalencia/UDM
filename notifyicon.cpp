@@ -11,7 +11,7 @@ NotifyIcon::~NotifyIcon()
 
 BOOL NotifyIcon::Add(HWND hWnd)
 {
-	SetWindowLong(hWnd, GWL_USERDATA, (long) this);
+	SetWindowLongPtr(hWnd, GWLP_USERDATA, (long) this);
 	return Shell_NotifyIcon(NIM_ADD, &data);
 }
 
@@ -75,6 +75,7 @@ LRESULT CALLBACK NotifyIcon::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM 
 				support.OpenDisplaySettings();
 				break;
 			case ID_UDM_PERSONALIZE:
+				support.OpenPersonalization();
 				break;
 			case ID_UDM_EXIT:
 				Delete();
