@@ -3,7 +3,7 @@
 // 
 class NotifyIcon: public IDispatcher
 {
-	NOTIFYICONDATA data = { 0 };
+	NOTIFYICONDATA data;
 	RuntimeSupport& support;
 
 public:

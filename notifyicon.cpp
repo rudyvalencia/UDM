@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 NotifyIcon::NotifyIcon(RuntimeSupport& instance)
-	: support(instance)
+	: support(instance), data({ 0 })
 {
 }
 
